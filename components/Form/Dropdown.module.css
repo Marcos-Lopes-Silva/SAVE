@@ -1,0 +1,30 @@
+.select_menu .options {
+    padding: 5px;
+    height: 20%;
+    overflow: scroll;
+    margin-top: 32.5px;
+    border-radius: 8px;
+    background-color: #fff;
+    /* box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25); */
+}
+
+.options .option {
+    display: flex;
+    position: relative;
+    height: 25px;
+    cursor: pointer;
+    padding: 0 16px;
+    list-style-type: none;
+    border-radius: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.options .option:hover {
+    background-color: #f2f2f2;
+}
+
+.option .optionText {
+    font-size: 16px;
+    color: #333;
+}

@@ -1,0 +1,37 @@
+[
+    {
+        "nome": "Home",
+        "path": "/",
+        "admin": false
+    },
+    {
+        "nome": "Quem somos",
+        "path": "/quem-somos",
+        "admin": false
+    },
+    {
+        "nome": "Ver pesquisas",
+        "path": "/pesquisas",
+        "admin": false
+    },
+    {
+        "nome": "Gerenciar Questionários",
+        "path": "/dashboard",
+        "admin": true
+    },
+    {
+        "nome": "Visualização de dados",
+        "path": "/relatorio",
+        "admin": true
+    },
+    {
+        "nome": "Dados públicos",
+        "path": "/dados-publicos",
+        "admin": true
+    },
+    {
+        "nome": "Gerenciar Participantes",
+        "path": "/participantes",
+        "admin": true
+    }
+]

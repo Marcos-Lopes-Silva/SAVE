@@ -1,0 +1,14 @@
+ [
+    {
+      "id": "draft",
+      "nome": "Em construção"
+    },
+    {
+      "id": "active",
+      "nome": "Ativos"
+    },
+    {
+      "id": "finished",
+      "nome": "Concluídos"
+    }
+]

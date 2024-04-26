@@ -1,0 +1,208 @@
+.item {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 5px;
+    background: #FFF;
+    border-radius: 20px;
+    height: 127px;
+    align-items: center;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    z-index: 1;
+}
+.imagem {
+    min-width: 100px;
+    cursor: pointer;
+    max-width: 20%;
+}
+
+.descricao {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    height: 80px;
+    width: 70%;
+}
+
+.imagem div {
+    margin-right: 170px;
+    width: 85px;
+    height: 78px; 
+    background: #1E1E1E; 
+    border-radius: 18px 5px 10px 5px; 
+    margin-left: 50px;
+}
+
+.titulo {
+    width: fit-content;
+    cursor: pointer;
+}
+.titulo a {
+    text-decoration: none;
+    color: #1E1E1E;
+}
+.titulo h2 {
+    color: #1E1E1E;
+    text-align: justify;
+    font-size: 17px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 20px; 
+    letter-spacing: 1px;
+}
+
+.tags {
+    display: flex;
+    gap: 30%;
+    justify-content: space-between;
+    align-items: center;
+    height: 30px;
+    z-index: 1;
+}
+
+.historycalendar {
+    display: flex;
+    gap: 10px;
+}
+
+.historycalendar div {
+    display: flex;
+    gap: 5px;
+    color: #9A9594;
+    align-items: center;
+}
+
+.historycalendar div p {
+    font-size: 15px;
+    font-weight: 500;
+
+}
+
+.progressandtripledot {
+    display: flex;
+    align-self: flex-end;
+    align-items: center;
+    gap: 50px;
+    z-index: 0;
+}
+
+.progress {
+    display: flex;
+    height: auto;
+    flex-direction: column;
+}
+
+.progressbar {
+    font-size: 10px;
+    height: 2px;
+    background-color: #9A9594;
+    animation: progress-animation 5s infinite;
+} 
+
+ .progressbar::-webkit-progress-value{
+    -webkit-appearance: none;
+    background-color: black;
+}
+
+.progressbar::-moz-progress-bar {
+    background-color: black;
+}
+
+.dots {
+    display: flex;
+    margin-bottom: 6px;
+    align-items: center;
+    cursor: pointer;
+    z-index: 0;
+}
+
+.dots label {
+    font-size: 30px;
+    color: #1E1E1E;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    z-index: 0;
+}
+
+.optionContainer {
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    right: 160px;
+    margin-top: 25px;
+    padding-bottom: 20px;
+    padding-top: 20px;
+    padding-left: 25px;
+    padding-right: 48px;
+    height: auto;
+    border-radius: 14px;
+    background-color: white;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    z-index: 2;
+}
+
+.optionCenter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.optionContainer ul {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.optionContainer ul li {
+    margin: 0;
+    padding: 0;
+    border-radius: 5px;
+}
+
+.optionContainer ul li:hover {
+    background-color: #f0f0f0;
+}
+
+.optionContainer ul li label {
+    display: flex;
+    font-size: 18px;
+    gap: 10px;
+    align-items: center;
+    text-decoration: none;
+    font-weight: 500;
+    color: black;
+}
+
+.optionContainer ul li label:hover {
+    color: black;
+}
+
+.optionContainer ul li label:active {
+    color: black;
+}
+
+.optionContainer ul li label:focus {
+    color: black;
+}
+
+.openDate {
+    display: flex;
+    height: auto;
+    gap: 10px;
+    background-color: #9A9594;
+    border-radius: 13px;
+    padding: 2px;
+    padding-left: 18px;
+    padding-right: 18px;
+    align-items: center;
+    cursor: pointer;
+}
+
+.openDate p{
+    color: white;
+    font-weight: 500;
+}
+

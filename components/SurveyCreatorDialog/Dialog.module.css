@@ -1,0 +1,20 @@
+.label {
+    font-weight: 600;
+}
+
+.input {
+    border-bottom: 1px solid #000;
+    padding-bottom: 2px;
+}
+
+.form {
+    padding-right: 30px;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.setedIcon {
+    border-bottom: 1px solid #000;
+}

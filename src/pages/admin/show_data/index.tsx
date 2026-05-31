@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Button from '@/components/layout/Button';
 import { api } from '@/lib/api';
 import { Accordion, AccordionItem, button, Checkbox, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Spinner, Switch, useDisclosure } from '@nextui-org/react';
@@ -103,16 +104,16 @@ export default function ShowData({ surveys }: { surveys: ISurveyDocument[] }) {
         const filteredAnalytics = getFilteredAnalytics(managerPreview.surveyId);
         return (
             <main>
-                <header className="flex flex-col rounded-xl shadow-2xl bg-zinc-200 dark:bg-zinc-900 px-40 py-16">
+                <header className="flex flex-col rounded-xl shadow-2xl bg-zinc-200 dark:bg-zinc-900 px-16 py-10">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h1 className="mb-2 text-2xl font-medium dark:text-white">Preview</h1>
-                            <a className="mb-4 dark:text-white">Visualize os gráficos que serão disponibilizados ao público.</a>
+                            <h1 className="mb-1 text-xl font-medium dark:text-white">Preview</h1>
+                            <a className="mb-3 text-sm dark:text-white">Visualize os gráficos que serão disponibilizados ao público.</a>
                         </div>
                         <Button onClick={() => setManagerPreview(null)}>Voltar</Button>
                     </div>
-                    <div className="mb-2 rounded-2xl bg-zinc-600 dark:bg-zinc-700 w-24 h-3" />
-                    <div className="ml-4 rounded-2xl bg-zinc-300 w-24 h-3" />
+                    <div className="mb-1 rounded-2xl bg-zinc-600 dark:bg-zinc-700 w-16 h-2" />
+                    <div className="ml-3 rounded-2xl bg-zinc-300 w-16 h-2" />
                 </header>
                 <section>
                     {filteredAnalytics && (
@@ -138,20 +139,20 @@ export default function ShowData({ surveys }: { surveys: ISurveyDocument[] }) {
     }
 
     return (
-        <main className="flex flex-col px-40 py-28">
-            <header className="flex flex-col rounded-xl shadow-2xl bg-zinc-200 dark:bg-zinc-900 px-40 py-16">
-                <h1 className="mb-2 text-2xl font-medium dark:text-white">
+        <main className="flex flex-col px-16 py-12">
+            <header className="flex flex-col rounded-xl shadow-2xl bg-zinc-200 dark:bg-zinc-900 px-16 py-10">
+                <h1 className="mb-1 text-xl font-medium dark:text-white">
                     Disponibilizando Informações ao Público
                 </h1>
-                <p className="mb-4 dark:text-white">
+                <p className="mb-3 text-sm dark:text-white">
                     Personalize a visualização dos dados que serão acessíveis ao público em geral.
                 </p>
-                <div className="mb-2 rounded-2xl bg-zinc-600 dark:bg-zinc-700 w-24 h-3" />
-                <div className="ml-4 rounded-2xl bg-zinc-300 w-24 h-3" />
+                <div className="mb-1 rounded-2xl bg-zinc-600 dark:bg-zinc-700 w-16 h-2" />
+                <div className="ml-3 rounded-2xl bg-zinc-300 w-16 h-2" />
             </header>
 
-            <section className="flex py-20 w-full items-end flex-col px-24">
-                <div className="w-full text-center text-xl mb-8">
+            <section className="flex py-10 w-full items-end flex-col px-8">
+                <div className="w-full text-center text-base mb-5">
                     <h1>
                         Pronto para compartilhar? Selecione os gráficos que serão exibidos publicamente
                     </h1>
@@ -170,14 +171,14 @@ export default function ShowData({ surveys }: { surveys: ISurveyDocument[] }) {
                             return (
                                 <div
                                     key={surveyId}
-                                    className="w-11/12 bg-white dark:bg-zinc-800 shadow-2xl rounded-3xl p-9"
+                                    className="w-10/12 bg-white dark:bg-zinc-800 shadow-lg rounded-xl p-3"
                                 >
                                     <Accordion variant="shadow">
                                         <AccordionItem
                                             title={survey.title}
                                             subtitle={`Aberto: ${formatDate(survey.openDate)} | Fechado: ${formatDate(survey.endDate)}`}
                                         >
-                                            <Accordion variant="splitted" className="mb-6 mt-6">
+                                            <Accordion variant="splitted" className="mb-3 mt-3">
                                                 {survey.pages.map((page, pageIndex) => {
                                                     const filteredQuestions = page.questions.filter(q =>
                                                         ["checkbox", "radio", "select", "table"].includes(q.type)
@@ -212,7 +213,7 @@ export default function ShowData({ surveys }: { surveys: ISurveyDocument[] }) {
                                                             title={page.title}
                                                             className="bg-zinc-50 dark:bg-zinc-900 rounded-xl"
                                                         >
-                                                            <div className="mb-6 mt-2 flex">
+                                                            <div className="mb-3 mt-1 flex">
                                                                 <Switch
                                                                     color="success"
                                                                     isSelected={allSelected}
@@ -345,11 +346,13 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const session = await getSession(context);
 
+    const userId = session?.user._id;
     const surveys = await Survey.find({
         $or: [
-            { author: session?.user._id as string },
-            { sharedWith: session?.user._id as string }
-        ]
+            { author: userId },
+            { sharedWith: new mongoose.Types.ObjectId(userId) }
+        ],
+        status: { $in: ["active", "closed"] }
     }).sort({ updatedAt: -1 }) || [];
 
     return {

@@ -105,8 +105,8 @@ const surveyAnalyticsSchema = new Schema<ISurveyAnalytics>(
       ],
       required: false
     },
-    surveyTitle: { type: String, required: true },
-    surveyDescription: { type: String, required: true },
+    surveyTitle: { type: String, default: "" },
+    surveyDescription: { type: String, default: "" },
     pages: [surveyPageSchema],
     openDate: { type: String, required: true },
     endDate: { type: String, required: true },

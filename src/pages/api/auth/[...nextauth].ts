@@ -4,8 +4,9 @@ import GitHubProvider from "next-auth/providers/github";
 import FacebookProvider from "next-auth/providers/facebook";
 import { connectToMongoDB } from "@/lib/db";
 import User, { IUserDocument } from "../../../../models/userModel";
+import { NextAuthOptions } from "next-auth";
 
-export default NextAuth({
+export const authOptions: NextAuthOptions = {
     providers: [
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
@@ -55,14 +56,15 @@ export default NextAuth({
 
             const persistedUser: IUserDocument | null = await User.findOne({ email: token.email }).lean();
 
+            // _id deve ser definido antes do early return para que queries com sharedWith funcionem
+            session.user._id = persistedUser?._id?.toString();
+
             if (token.email === 'egressas4@gmail.com') {
                 session.user.email = token.email;
                 session.user.role = 'admin';
                 session.user.verified = true;
                 return session;
             }
-
-            session.user._id = persistedUser?._id?.toString();
             session.user.email = persistedUser?.email;
             session.user.role = persistedUser?.role || 'user';
             session.user.verified = persistedUser?.approved ?? false;
@@ -102,4 +104,6 @@ export default NextAuth({
         signIn: '/',
         signOut: '/'
     }
-})
+}
+
+export default NextAuth(authOptions)

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import SearchBar from "@/components/layout/SearchBar";
 import { useRouter } from "next/router";
 import { useEffect, useMemo, useState, useCallback } from "react";
@@ -207,8 +208,8 @@ const ShareModal = ({ isOpen, onOpenChange, survey }: IShareModalProps) => {
 
     const fetchSharedUsers = async () => {
         try {
-            const response = await api.get<any>(`/admin/survey/share?id=${survey._id}`);
-            setSelectedUsers(response.data.map((u: any) => u._id));
+            const response = await api.get<any[]>(`/admin/survey/share?id=${survey._id}`);
+            setSelectedUsers(response.map((u: any) => u._id));
         } catch (error) {
             console.error(error);
         }
@@ -222,8 +223,8 @@ const ShareModal = ({ isOpen, onOpenChange, survey }: IShareModalProps) => {
         }
         setLoading(true);
         try {
-            const response = await api.get<any>(`/admin/users?role=admin&search=${term}`);
-            setUsers(response.data);
+            const response = await api.get<any[]>(`/admin/users?role=admin&search=${term}`);
+            setUsers(response);
         } catch (error) {
             console.error(error);
         } finally {
@@ -335,10 +336,11 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
     const session = await getSession(context);
 
+    const userId = session?.user._id;
     const surveys = await Survey.find({
         $or: [
-            { author: session?.user._id as string },
-            { sharedWith: session?.user._id as string }
+            { author: userId },
+            { sharedWith: new mongoose.Types.ObjectId(userId) }
         ]
     }).sort({ updatedAt: -1 }) || [];
 

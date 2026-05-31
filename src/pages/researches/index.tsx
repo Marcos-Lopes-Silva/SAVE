@@ -241,111 +241,99 @@ export default function Researches({ surveys }: { surveys: CustomISurveyDocument
   };
 
   return (
-    <main>
-      <header className="flex flex-col lg:flex-row bg-zinc-400 dark:bg-zinc-800 shadow-lg rounded-t-3xl gap-4 lg:gap-10 p-6 lg:px-32 lg:py-6 lg:max-w-7xl mx-auto mt-6 lg:mt-10 relative ml-5 lg:ml-auto mr-5 lg:mr-auto">
-        <div className="flex flex-col items-center lg:items-start gap-2 lg:gap-4 place-content-center text-center lg:text-left">
-          <h1 className="font-semibold text-lg lg:text-2xl dark:text-white mt-2 lg:mt-5">
-            Pesquisas
-          </h1>
-          <p className="text-sm lg:text-md dark:text-white">
-            Explore as pesquisas e conduza análises personalizadas, selecionando a dimensão desejada
-            para visualizar os dados com precisão.
-          </p>
+    <main className="flex flex-col px-28 py-12">
+      <header className="flex flex-col rounded-xl shadow-2xl bg-zinc-200 dark:bg-zinc-900 px-24 py-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="mb-1 text-xl font-medium dark:text-white">
+              Pesquisas
+            </h1>
+            <p className="mb-2 text-sm dark:text-white max-w-lg">
+              Explore as pesquisas e conduza análises personalizadas, selecionando a dimensão desejada
+              para visualizar os dados com precisão.
+            </p>
+          </div>
+          <Image
+            className="w-48 self-end"
+            src={ImageGraphic}
+            alt="graphics"
+            priority
+          />
         </div>
-        <Image
-          className="w-1/3 lg:w-auto self-center lg:self-end p-2 lg:p-4 lg:py-5"
-          src={ImageGraphic}
-          alt="graphics"
-          priority
-        />
+        <div className="mb-1 rounded-2xl bg-zinc-600 dark:bg-zinc-700 w-16 h-2" />
+        <div className="ml-2 rounded-2xl bg-zinc-300 w-16 h-2" />
       </header>
 
-      <div className="flex flex-col lg:flex-row justify-between items-center mt-4 lg:mt-12 mx-auto max-w-7xl gap-5 lg:gap-0 px-4 lg:px-0 p-10 lg:p-0">
-        <Select
-          className="w-full lg:max-w-xs"
-          label="Questionários"
-          placeholder="Selecione"
-          selectedKeys={selectedSurveyId ? [selectedSurveyId] : new Set()}
-          variant="bordered"
-          onSelectionChange={(keys) => {
-            const selectedKey = Array.from(keys)[0] as string;
-            handleSurveyChange(selectedKey);
-          }}
-        >
-          {surveys.map((survey) => (
-            <SelectItem
-              key={String(survey._id)}
-              value={String(survey._id)}
-            >
-              {survey.title}
-            </SelectItem>
-          ))}
-        </Select>
+      <section className="flex flex-col py-10 px-8 gap-4">
+        <div className="flex justify-between items-center gap-4">
+          <Select
+            className="max-w-xs"
+            label="Questionários"
+            placeholder="Selecione"
+            selectedKeys={selectedSurveyId ? [selectedSurveyId] : new Set()}
+            variant="bordered"
+            onSelectionChange={(keys) => {
+              const selectedKey = Array.from(keys)[0] as string;
+              handleSurveyChange(selectedKey);
+            }}
+          >
+            {surveys.map((survey) => (
+              <SelectItem
+                key={String(survey._id)}
+                value={String(survey._id)}
+              >
+                {survey.title}
+              </SelectItem>
+            ))}
+          </Select>
 
-        <Button
-          variant="bordered"
-          className="w-full lg:w-auto"
-          style={{
-            paddingLeft: '40px',
-            paddingRight: '40px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}
-          onClick={() => setIsFilterClicked((prev) => !prev)}
-          isDisabled={!selectedSurveyId}
-        >
-          <FaFilter style={{ position: 'absolute', left: '15px', fontSize: '1em' }} />
-          Filtros
-        </Button>
-        <Button
-          variant="solid"
-          className="w-full lg:w-auto"
-          style={{
-            backgroundColor: '#0f172a',
-            color: 'white',
-            position: 'relative',
-            width: '100%',
-            maxWidth: '180px',
-            height: '40px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            cursor: isGeneratingPDF || !selectedSurveyId ? 'default' : 'pointer',
-          }}
-          isDisabled={isGeneratingPDF || !selectedSurveyId}
-          onClick={!isGeneratingPDF && selectedSurveyId ? handleDownloadPDF : undefined}
-        >
-          {isGeneratingPDF ? (
-            <div style={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'center' }}>
-              <span style={{ color: 'white', marginRight: '10px', fontSize: '14px', width: '30px', textAlign: 'right' }}>
-                {Math.round(downloadProgress)}%
+          <Button
+            variant="bordered"
+            className="flex items-center gap-2 px-10"
+            onClick={() => setIsFilterClicked((prev) => !prev)}
+            isDisabled={!selectedSurveyId}
+          >
+            <FaFilter />
+            Filtros
+          </Button>
+
+          <Button
+            variant="solid"
+            className="bg-zinc-800 text-white px-10"
+            isDisabled={isGeneratingPDF || !selectedSurveyId}
+            onClick={!isGeneratingPDF && selectedSurveyId ? handleDownloadPDF : undefined}
+          >
+            {isGeneratingPDF ? (
+              <div className="flex items-center gap-2 w-full justify-center">
+                <span className="text-white text-sm w-8 text-right">
+                  {Math.round(downloadProgress)}%
+                </span>
+                <Progress
+                  aria-label="Progresso do download"
+                  className="w-full"
+                  color="success"
+                  size="sm"
+                  value={downloadProgress}
+                />
+              </div>
+            ) : (
+              <span className="flex items-center gap-2">
+                Download <IoMdDownload />
               </span>
-              <Progress
-                aria-label="Progresso do download"
-                className="w-full"
-                color="success"
-                size="sm"
-                value={downloadProgress}
-              />
-            </div>
-          ) : (
-            <>
-              Download <IoMdDownload className="ml-2" />
-            </>
-          )}
-        </Button>
-      </div>
-
-      {!selectedSurveyId && (
-        <div className="text-center text-gray-500 dark:text-white/75 p-4 lg:p-12">
-          <p>Selecione um dos questionários disponíveis para começar a visualizar os gráficos.
-            <br />Utilize os filtros personalizados para análises mais detalhadas dos resultados obtidos.</p>
+            )}
+          </Button>
         </div>
-      )}
 
-      {isFilterClicked && selectedSurvey && (
-        <div className="mt-4 lg:mt-6 mx-auto max-w-7xl px-4 lg:px-0">
+        {!selectedSurveyId && (
+          <div className="text-center text-zinc-500 dark:text-zinc-300 py-4">
+            <p>
+              Selecione um dos questionários disponíveis para começar a visualizar os gráficos.
+              <br />Utilize os filtros personalizados para análises mais detalhadas dos resultados obtidos.
+            </p>
+          </div>
+        )}
+
+        {isFilterClicked && selectedSurvey && (
           <Filters
             surveyId={selectedSurvey._id}
             setFiltersApplied={(applied) => {
@@ -354,31 +342,31 @@ export default function Researches({ surveys }: { surveys: CustomISurveyDocument
             }}
             setError={setError}
             setSelectedPageIndex={setSelectedPageIndex}
-            initialFilters={filters} // Passa os filtros aplicados
-            initialPageIndex={selectedPageIndex} // Passa o índice da página atualmente selecionada
-          />
-        </div>
-      )}
-
-      {error && !selectedSurvey && (
-        <div className="p-4 text-center text-red-500 text-lg font-semibold">
-          {error}
-        </div>
-      )}
-
-      <div className="flex flex-col lg:flex-row -mt-4 lg:-mt-8 mx-auto max-w-7xl">
-        {data && (
-          <Graphics
-            data={data}
-            selectedPageIndex={selectedPageIndex}
-            lastUpdate={false}
-            download={!isGeneratingPDF}
-            modal={!isGeneratingPDF}
-            selectCharts={false}
-            selectedChartTypes={{} as Record<string, string>}
+            initialFilters={filters}
+            initialPageIndex={selectedPageIndex}
           />
         )}
-      </div>
+
+        {error && !selectedSurvey && (
+          <div className="text-center text-red-500 text-lg font-semibold">
+            {error}
+          </div>
+        )}
+
+        <div className="flex flex-col">
+          {data && (
+            <Graphics
+              data={data}
+              selectedPageIndex={selectedPageIndex}
+              lastUpdate={false}
+              download={!isGeneratingPDF}
+              modal={!isGeneratingPDF}
+              selectCharts={false}
+              selectedChartTypes={{} as Record<string, string>}
+            />
+          )}
+        </div>
+      </section>
     </main>
   );
 }

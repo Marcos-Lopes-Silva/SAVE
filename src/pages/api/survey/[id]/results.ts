@@ -9,7 +9,8 @@ import { processResults } from "../../../../lib/processresults";
 import { Types } from "mongoose";
 import mongoose from "mongoose";
 
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../../auth/[...nextauth]";
 
 interface AnalyticsQuery {
   surveyId: mongoose.Types.ObjectId;
@@ -21,7 +22,7 @@ export default async function handler(
   res: NextApiResponse<ISurveyAnalytics | { message: string }>
 ) {
   await connectToMongoDB();
-  const session = await getSession({ req });
+  const session = await getServerSession(req, res, authOptions);
   const { id } = req.query;
 
   switch (req.method) {
@@ -84,20 +85,31 @@ export default async function handler(
           }
         }
 
-        let query: AnalyticsQuery = { surveyId: objectId };
-        if (filters) {
-          query.filters = filters;
-        }
+        // Query precisa ser precisa: sem filtros busca apenas docs sem filtros,
+        // evitando que analytics de queries filtradas sejam confundidos com o master
+        const hasActiveFilters = filters && filters.length > 0;
+        const masterQuery = {
+          surveyId: objectId,
+          $or: [{ filters: { $exists: false } }, { filters: null }, { filters: [] as FilterCondition[] }],
+        };
+        const query = hasActiveFilters ? { surveyId: objectId, filters } : masterQuery;
+
+        // Busca o master separadamente para checar hasPublic de forma confiável
+        const masterAnalytics = await SurveyAnalytics.findOne(masterQuery as any).exec();
 
         const surveyResults: SurveyResultDocument[] = await SurveyResult.find({ surveyId: objectId, isComplete: true }).exec();
         const processedData = processResults(survey, surveyResults, filters);
         processedData.surveyId = objectId;
 
-        const existing = await SurveyAnalytics.findOne(query).exec();
+        const existing = hasActiveFilters
+          ? await SurveyAnalytics.findOne(query as any).exec()
+          : masterAnalytics;
 
         let savedAnalytics: ISurveyAnalytics | null;
 
         if (!existing) {
+          // Analytics filtrado herda hasPublic do master
+          processedData.hasPublic = masterAnalytics?.hasPublic ?? false;
           savedAnalytics = await SurveyAnalytics.create(processedData);
         } else {
           const updatedPages = processedData.pages.map(newPage => {
@@ -114,22 +126,23 @@ export default async function handler(
           });
 
           savedAnalytics = await SurveyAnalytics.findOneAndUpdate(
-            query,
+            query as any,
             { $set: { pages: updatedPages, hasPublic: existing.hasPublic } },
             { new: true }
           ).exec();
         }
 
-        // Permission Check: If not staff, only allow if hasPublic is true
+        // Permission Check: usa o master para verificar hasPublic (evita checar analytics filtrado)
         if (!isStaff) {
           if (savedAnalytics === null) {
             return res.status(404).json({ message: "Resultados não encontrados" });
           }
 
-          if (!savedAnalytics.hasPublic) {
+          const isPublicAllowed = masterAnalytics?.hasPublic ?? savedAnalytics.hasPublic;
+          if (!isPublicAllowed) {
             return res.status(403).json({ message: "Acesso negado aos resultados privados" });
           }
-          
+
           // Filter out questions that are not public
           savedAnalytics.pages = savedAnalytics.pages.map(page => ({
             ...page,
@@ -151,8 +164,9 @@ export default async function handler(
         }
         const objectId = new mongoose.Types.ObjectId(id as string);
 
+        // Atualiza apenas o documento master (sem filtros)
         const updatedAnalytics = await SurveyAnalytics.findOneAndUpdate(
-          { surveyId: objectId },
+          { surveyId: objectId, $or: [{ filters: { $exists: false } }, { filters: null }, { filters: [] }] },
           { $set: { hasPublic } },
           { new: true }
         );

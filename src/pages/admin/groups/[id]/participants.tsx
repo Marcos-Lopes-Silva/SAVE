@@ -2,7 +2,7 @@
 
 import SearchBar from "@/components/layout/SearchBar";
 import { useEffect, useMemo, useState } from "react";
-import { FaUserPlus, FaPen } from "react-icons/fa";
+import { FaUserPlus, FaPen, FaFileUpload } from "react-icons/fa";
 import { IoMdTrash } from "react-icons/io";
 import { MdGroups } from "react-icons/md";
 import { AiOutlineExclamationCircle } from "react-icons/ai";
@@ -17,6 +17,8 @@ import {
     Pagination
 } from "@nextui-org/react";
 import { IGroup, IUsers } from "../../../../../models/groupModel";
+import { ImportModal } from "@/components/Groups/Modal";
+import { toast } from "react-toastify";
 
 const PageSize = 5;
 
@@ -28,6 +30,7 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
     const { isOpen, onOpen, onOpenChange } = useDisclosure();
     const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onOpenChange: onDeleteChange } = useDisclosure();
     const { isOpen: isAddOpen, onOpen: onAddOpen, onOpenChange: onAddChange } = useDisclosure();
+    const { isOpen: isImportOpen, onOpen: onImportOpen, onClose: onImportClose } = useDisclosure();
 
     const [editingUser, setEditingUser] = useState<IUsers | null>(null);
     const [groupState, setGroupState] = useState<IGroup>(group);
@@ -111,6 +114,55 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
         await fetchGroup();
     };
 
+    const handleImportUsers = async (data: any[]) => {
+        const existingEmails = new Set(groupState.members.map((u) => u.email.toLowerCase().trim()));
+        const existingCpfs = new Set(
+            groupState.members.filter((u) => u.cpf).map((u) => u.cpf.replace(/\D/g, ''))
+        );
+
+        const seenEmails = new Set<string>();
+        const seenCpfs = new Set<string>();
+        let duplicateCount = 0;
+
+        const newUsers = data
+            .map((user) => ({
+                ...user,
+                email: user.email?.toLowerCase().trim(),
+                cpf: user.cpf ? user.cpf.replace(/\D/g, '') : user.cpf,
+            }))
+            .filter((user) => {
+                const isDuplicateInGroup =
+                    existingEmails.has(user.email) || (!!user.cpf && existingCpfs.has(user.cpf));
+                const isDuplicateInFile =
+                    seenEmails.has(user.email) || (!!user.cpf && seenCpfs.has(user.cpf));
+
+                if (isDuplicateInGroup || isDuplicateInFile) {
+                    duplicateCount++;
+                    return false;
+                }
+
+                seenEmails.add(user.email);
+                if (user.cpf) seenCpfs.add(user.cpf);
+                return true;
+            });
+
+        if (duplicateCount > 0) {
+            toast.info(`${duplicateCount} participante(s) ignorado(s) por já pertencerem ao grupo`);
+        }
+
+        if (newUsers.length === 0) return;
+
+        const updatedMembers = [...groupState.members, ...newUsers];
+
+        await api.patch(`/group/${id}`, {
+            ...groupState,
+            members: updatedMembers,
+        });
+
+        await fetchGroup();
+        toast.success(`${newUsers.length} participante(s) importado(s) com sucesso`);
+    };
+
     // ================= UI =================
 
     return (
@@ -135,13 +187,23 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
             {/* CONTEÚDO */}
             <section className="flex py-20 w-full items-end flex-col px-24">
                 <div className="w-full flex justify-between mb-6">
-                    <button
-                        onClick={onAddOpen}
-                        className="flex items-center gap-2 bg-zinc-800 text-white px-6 py-2 rounded-lg hover:bg-zinc-700"
-                    >
-                        <FaUserPlus />
-                        Adicionar
-                    </button>
+                    <div className="flex gap-3">
+                        <button
+                            onClick={onAddOpen}
+                            className="flex items-center gap-2 bg-zinc-800 text-white px-6 py-2 rounded-lg hover:bg-zinc-700"
+                        >
+                            <FaUserPlus />
+                            Adicionar
+                        </button>
+
+                        <button
+                            onClick={onImportOpen}
+                            className="flex items-center gap-2 bg-zinc-200 dark:bg-zinc-700 dark:text-white px-6 py-2 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-600"
+                        >
+                            <FaFileUpload />
+                            Importar CSV
+                        </button>
+                    </div>
 
                     <span>{filteredList.length} usuários</span>
                 </div>
@@ -198,6 +260,11 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
             <EditModal {...{ isOpen, onOpenChange, editingUser, setEditingUser, handleSaveUser }} />
             <DeleteModal {...{ isDeleteOpen, onDeleteChange, confirmDelete, editingUser }} />
             <AddModal {...{ isAddOpen, onAddChange, handleAdd }} />
+            <ImportModal
+                isOpen={isImportOpen}
+                onClose={onImportClose}
+                onImportData={handleImportUsers}
+            />
         </main>
     );
 }

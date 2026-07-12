@@ -209,6 +209,7 @@ const cpfSchema = z.object({
 type CPF = z.infer<typeof cpfSchema>;
 
 const ValidateModel = ({ isOpen, onOpenChange, session }: ValidateModelProps) => {
+    const { update } = useSession();
 
     const updateCPF = async (data: CPF) => {
         if ((data.cpf && data.cpf.length < 9) || !data.cpf) {
@@ -226,7 +227,7 @@ const ValidateModel = ({ isOpen, onOpenChange, session }: ValidateModelProps) =>
 
             if (response) {
                 await api.patch(`user/${session?.user._id as string}`, { cpf: hashedCpf });
-                await api.patch('user/update-session', { cpf: hashedCpf });
+                await update();
                 toast.clearWaitingQueue();
                 onOpenChange();
                 toast.success("CPF atualizado com sucesso!");

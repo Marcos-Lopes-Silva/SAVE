@@ -1,17 +1,15 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { connectToMongoDB } from "@/lib/db";
 import User from "../../../../models/userModel";
-import { getSession } from "next-auth/react";
+import { requireAdmin } from "@/lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'GET') return res.status(405).json({ message: 'Method not allowed' });
 
     await connectToMongoDB();
-    const session = await getSession({ req });
 
-    if (!session || session.user.role !== 'admin') {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
+    const session = await requireAdmin(req, res);
+    if (!session) return;
 
     try {
         const { role, search } = req.query;

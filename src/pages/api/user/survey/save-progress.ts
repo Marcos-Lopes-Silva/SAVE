@@ -5,11 +5,15 @@ import Survey from "../../../../../models/surveyModel";
 import { processResults } from "../../../../lib/processresults";
 import mongoose from "mongoose";
 import { connectToMongoDB } from "@/lib/db";
+import { requireSession } from "@/lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: "Method not allowed" });
   }
+
+  const session = await requireSession(req, res);
+  if (!session) return;
 
   try {
     await connectToMongoDB();
@@ -17,6 +21,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!surveyId || !userId) {
       return res.status(400).json({ message: "surveyId and userId are required" });
+    }
+
+    if (userId !== session.user._id) {
+      return res.status(403).json({ message: "Cannot save progress for another user" });
     }
 
     const sId = new mongoose.Types.ObjectId(surveyId);

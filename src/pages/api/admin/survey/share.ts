@@ -1,16 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { connectToMongoDB } from "@/lib/db";
 import Survey from "../../../../../models/surveyModel";
-import { getSession } from "next-auth/react";
+import { requireAdmin } from "@/lib/apiAuth";
 import mongoose from "mongoose";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
-    const session = await getSession({ req });
 
-    if (!session || session.user.role !== 'admin') {
-        return res.status(401).json({ message: 'Unauthorized' });
-    }
+    const session = await requireAdmin(req, res);
+    if (!session) return;
 
     const { id } = req.query; // surveyId
     const survey = await Survey.findById(id);

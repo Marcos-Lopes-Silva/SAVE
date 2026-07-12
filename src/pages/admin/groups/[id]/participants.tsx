@@ -16,9 +16,10 @@ import {
     Input,
     Pagination
 } from "@nextui-org/react";
-import { IGroup, IUsers } from "../../../../../models/groupModel";
+import Group, { IGroup, IUsers } from "../../../../../models/groupModel";
 import { ImportModal } from "@/components/Groups/Modal";
 import { toast } from "react-toastify";
+import { connectToMongoDB } from "@/lib/db";
 
 const PageSize = 5;
 
@@ -104,6 +105,7 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
     const handleAdd = async (data: IUsers) => {
         const cleanCpf = data?.cpf?.replace(/\D/g, '');
         data.cpf = cleanCpf;
+        data.id = crypto.randomUUID();
         const updatedMembers = [...groupState.members, data];
 
         await api.patch(`/group/${id}`, {
@@ -127,6 +129,7 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
         const newUsers = data
             .map((user) => ({
                 ...user,
+                id: crypto.randomUUID(),
                 email: user.email?.toLowerCase().trim(),
                 cpf: user.cpf ? user.cpf.replace(/\D/g, '') : user.cpf,
             }))
@@ -272,12 +275,13 @@ export default function GroupUsers({ id, group }: { id: string; group: IGroup })
 export async function getServerSideProps(context: { params: { id: string } }) {
     const { id } = context.params;
 
-    const group = await fetch(`${process.env.NEXT_PUBLIC_NEXTAUTH_URL}api/group/${id}`).then(res => res.json());
+    await connectToMongoDB();
+    const group = await Group.findById(id);
 
     return {
         props: {
             id,
-            group
+            group: JSON.parse(JSON.stringify(group))
         }
     }
 }
@@ -370,6 +374,8 @@ const EditModal = ({ isOpen, onOpenChange, editingUser, setEditingUser, handleSa
 }
 
 import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import Button from "@/components/layout/Button";
 import { useTranslation } from "react-i18next";
 import { Form } from "@/components/Form";
@@ -382,6 +388,14 @@ interface AddModalProps {
     title?: string;
 }
 
+const addUserSchema = z.object({
+    name: z.string().min(4).max(120),
+    email: z.string().email().min(4).max(120),
+    cpf: z.string().optional().refine(val => !val || /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(val), {
+        message: "CPF inválido"
+    }),
+});
+
 export const AddModal = ({
     isAddOpen,
     onAddChange,
@@ -391,6 +405,7 @@ export const AddModal = ({
     const { t } = useTranslation();
 
     const form = useForm({
+        resolver: zodResolver(addUserSchema),
         defaultValues: {
             name: "",
             email: "",

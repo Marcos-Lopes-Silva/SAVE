@@ -1,10 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import SurveyUsers from "../../../../../../models/surveyUsersModel";
 import { connectToMongoDB } from "@/lib/db";
+import { requireSession } from "@/lib/apiAuth";
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
+
+    if (!(await requireSession(req, res))) return;
+
     const { id } = req.query;
 
 

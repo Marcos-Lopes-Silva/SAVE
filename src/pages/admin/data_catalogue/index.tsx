@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import { t } from "i18next";
 import { useEffect, useState } from 'react';
-import { ISurveyDocument } from "../../../../models/surveyModel";
+import Survey, { ISurveyDocument } from "../../../../models/surveyModel";
 import { useRouter } from "next/router";
 import { GetServerSideProps } from "next";
 import { connectToMongoDB } from "@/lib/db";
@@ -27,7 +27,6 @@ export default function Catalogue({ survey }: Props) {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        console.log('Página alterada para:', page);
     };
 
     const pageSize = 4;
@@ -158,8 +157,7 @@ export default function Catalogue({ survey }: Props) {
 export const getServerSideProps: GetServerSideProps = async () => {
     await connectToMongoDB();
 
-    const surveys = await api.get('survey');
-    console.log("Surveys:", surveys);
+    const surveys = await Survey.find({});
     return {
         props: {
             survey: JSON.parse(JSON.stringify(surveys))

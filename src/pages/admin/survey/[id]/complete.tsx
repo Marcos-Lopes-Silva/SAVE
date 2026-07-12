@@ -159,7 +159,7 @@ export default function CompleteCreation({ survey, groups }: Props) {
 
             toast.success(t('admin.survey.complete.success'));
         } catch (error) {
-            console.log(error);
+            console.error(error);
             toast.error(t('admin.survey.complete.error'));
         }
     }

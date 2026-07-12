@@ -84,10 +84,11 @@ const getHtml = async (name: string, institute: string, phone: string, email: st
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (req.method !== 'POST') {
+        return res.status(405).json({ message: 'Method not allowed' });
+    }
 
-    const { email, approved, to, subject, text, name, institute, phone } = req.body;
-
-    let html = '';
+    const { email, approved, subject, name, institute, phone } = req.body;
 
     try {
         if (subject == 'Nova solicitação de acesso') {
@@ -106,19 +107,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 <p>Por favor, acesse o <a href="${process.env.NEXTAUTH_URL}">sistema</a> para continuar.</p>`,
             });
         } else {
-            await transporter.sendMail({
-                to,
-                subject,
-                text,
-                html
-            });
+            return res.status(400).json({ message: 'Invalid request' });
         }
-
 
         return res.status(200).json({ message: 'Email sent' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 
 }

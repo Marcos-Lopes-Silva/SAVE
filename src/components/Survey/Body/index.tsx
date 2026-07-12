@@ -7,6 +7,7 @@ import {
     ISurveyDocument,
 } from "../../../../models/surveyModel";
 import QuestionBody from "./Question";
+import { AutosaveContext } from "./AutosaveContext";
 import { t } from "i18next";
 import { Control, FormProvider, useForm, UseFormWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -196,8 +197,25 @@ export default function SurveyBody({ survey, responses, term }: Props) {
         handleSubmit,
         formState: { errors },
         watch,
-        control
+        control,
+        getValues
     } = createSurveyForm;
+
+    // Perguntas de texto contínuo (o usuário digita aos poucos) não devem
+    // disparar um save a cada tecla — só ao perder o foco. Perguntas de
+    // resposta discreta (radio/checkbox/select/etc) continuam salvando pelo
+    // watcher de formulário abaixo.
+    const continuousTypingFields = useMemo(() => {
+        const names = new Set<string>();
+        survey.pages.forEach((page) => {
+            page.questions.forEach((question) => {
+                if (["text", "textarea", "number"].includes(question.type)) {
+                    names.add(question.name);
+                }
+            });
+        });
+        return names;
+    }, [survey]);
 
     const scrollToQuestion = (questionId: number) => {
         const questionElement = questionRefs.current[questionId];
@@ -255,7 +273,6 @@ export default function SurveyBody({ survey, responses, term }: Props) {
 
             let pageIdWithError: number | null = null;
             let questionIdWithError: number | null = null;
-            console.log(errors);
             survey.pages.forEach((page) => {
                 page.questions.forEach((question) => {
                     if (question.name === firstError) {
@@ -327,17 +344,36 @@ export default function SurveyBody({ survey, responses, term }: Props) {
         }
     }, [survey._id, session?.user?._id]);
 
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const triggerSave = useCallback(() => {
+        if (saveTimerRef.current) {
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = null;
+        }
+        saveProgress(getValues(), currentPage, true);
+    }, [saveProgress, getValues, currentPage]);
+
     useEffect(() => {
         if (!acceptedTerm || !loaded) return;
 
-        const subscription = watch((value) => {
-            const timer = setTimeout(() => {
+        const subscription = watch((value, { name }) => {
+            // Campos de texto contínuo salvam só no blur (ver useAutosave),
+            // não a cada tecla digitada.
+            if (name && continuousTypingFields.has(name)) return;
+
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => {
                 saveProgress(value, currentPage, true);
+                saveTimerRef.current = null;
             }, 2000);
-            return () => clearTimeout(timer);
         });
-        return () => subscription.unsubscribe();
-    }, [watch, acceptedTerm, currentPage, saveProgress, loaded]);
+
+        return () => {
+            subscription.unsubscribe();
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        };
+    }, [watch, acceptedTerm, currentPage, saveProgress, loaded, continuousTypingFields]);
 
     const handleInitialPage = () => {
         onOpenChange2();
@@ -423,6 +459,7 @@ export default function SurveyBody({ survey, responses, term }: Props) {
                     </div>
 
                     <FormProvider {...createSurveyForm}>
+                    <AutosaveContext.Provider value={triggerSave}>
                         <form
                             onSubmit={handleSubmit(submitSurvey)}
                             className="flex flex-col gap-6"
@@ -440,7 +477,7 @@ export default function SurveyBody({ survey, responses, term }: Props) {
 
                                     return (
                                         <div
-                                            key={question.id}
+                                            key={`${currentPage}-${question.id}`}
                                             ref={(el: any) => (questionRefs.current[question.id] = el)}
                                             className={`p-6 rounded-2xl border transition-all duration-300
                       bg-white dark:bg-zinc-900
@@ -485,6 +522,7 @@ export default function SurveyBody({ survey, responses, term }: Props) {
                                 )}
                             </div>
                         </form>
+                    </AutosaveContext.Provider>
                     </FormProvider>
                 </div>
             </section>

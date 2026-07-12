@@ -96,7 +96,7 @@ export function Checkbox({ question }: IQuestionProp) {
                                             variant="underlined"
                                             className="dark:text-white"
                                             placeholder="Digite aqui..."
-                                            value={otherEntry?.toLowerCase().startsWith("outro:") ? otherEntry.split(":")[1].trim() : ""}
+                                            value={otherEntry?.toLowerCase().startsWith("outro:") ? otherEntry.slice(otherEntry.indexOf(":") + 1).replace(/^ /, "") : ""}
                                             onChange={(e) => handleCheckboxOtherChange(question.name, e.target.value)}
                                         />
                                     </Form.Field>

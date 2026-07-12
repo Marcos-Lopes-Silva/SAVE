@@ -67,7 +67,10 @@ export default function ShowData({ surveys }: { surveys: ISurveyDocument[] }) {
     const handleConfirm = async (surveyId: string) => {
         try {
             const surveyAnalytics = surveysAnalytics[surveyId];
-            if (!surveyAnalytics) return;
+            if (!surveyAnalytics) {
+                toast.error('Dados ainda carregando, tente novamente em instantes.');
+                return;
+            }
 
             const currentSelectedQuestions = selectedQuestions[surveyId] || [];
             const currentChartTypes = selectedChartTypes[surveyId] || {};

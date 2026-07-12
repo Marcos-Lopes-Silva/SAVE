@@ -3,6 +3,7 @@ import { connectToMongoDB } from "@/lib/db"
 import SurveyResult from "../../../../../models/surveyResultModel"
 import { Parser } from '@json2csv/plainjs'
 import mongoose from "mongoose"
+import { requireAdmin } from "@/lib/apiAuth"
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToMongoDB()
@@ -11,6 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== "GET") {
     return res.status(405).json({ message: "Method not allowed" })
   }
+
+  if (!(await requireAdmin(req, res))) return
 
   try {
     const objectId = new mongoose.Types.ObjectId(id as string)

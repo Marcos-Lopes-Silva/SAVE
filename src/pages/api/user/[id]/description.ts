@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
 import { connectToMongoDB } from "@/lib/db";
 import User from "../../../../../models/userModel";
+import { requireSession } from "@/lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
@@ -9,10 +10,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (req.method !== "PATCH") {
         res.setHeader("Allow", ["PATCH"]);
-        return res.status(405).json({ 
+        return res.status(405).json({
             message: `Método ${req.method} não permitido`,
-            allowedMethods: ["PATCH"] 
+            allowedMethods: ["PATCH"]
         });
+    }
+
+    const session = await requireSession(req, res);
+    if (!session) return;
+
+    const isSelf = session.user._id?.toString() === (id as string);
+    const isAdmin = session.user.role === "admin" && session.user.verified;
+
+    if (!isSelf && !isAdmin) {
+        return res.status(403).json({ message: "Forbidden" });
     }
 
     try {

@@ -6,7 +6,7 @@ import { Input } from "@nextui-org/react";
 
 
 export function Radio({ question }: IQuestionProp) {
-    const { setValue, watch, register } = useFormContext();
+    const { setValue, watch } = useFormContext();
     const watchedValue = String(watch(question.name) ?? "");
 
     const isOtherOptionValue = (val: string) => 
@@ -27,7 +27,7 @@ export function Radio({ question }: IQuestionProp) {
                             <Input
                                 id={radioId}
                                 className="w-10 h-10 shrink-0"
-                                {...register(question.name)}
+                                name={question.name}
                                 value={option.value}
                                 checked={isOtherOption ? isOtherSelected : watchedValue === option.value}
                                 onChange={() => setValue(question.name, option.value, { shouldValidate: true, shouldDirty: true })}
@@ -41,7 +41,7 @@ export function Radio({ question }: IQuestionProp) {
                                 <Input
                                     className="w-full p-2 rounded dark:text-white"
                                     variant="underlined"
-                                    value={watchedValue.toLowerCase().startsWith("outro:") ? watchedValue.split(":")[1].trim() : ""}
+                                    value={watchedValue.toLowerCase().startsWith("outro:") ? watchedValue.slice(watchedValue.indexOf(":") + 1).replace(/^ /, "") : ""}
                                     type="text"
                                     placeholder="Digite aqui..."
                                     onChange={(e) => setValue(question.name, 'Outro: ' + e.target.value, { shouldValidate: true, shouldDirty: true })}

@@ -2,27 +2,48 @@ import { toast } from "react-toastify";
 import { IQuestion } from "../../../../../models/surveyModel";
 import { QuestionsBody } from "../Questions";
 import { useFormContext, useWatch } from "react-hook-form";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 
 interface Props {
     id: string;
     question: IQuestion;
 }
 
+// Sentinel field name: passing `name: undefined` to useWatch subscribes to
+// the ENTIRE form instead of nothing, so every non-dependent question would
+// re-render (and re-run its effects) on every keystroke anywhere in the
+// survey, including on other pages. Watching a name that can never be a
+// real field keeps the subscription inert for questions with no dependsOn.
+const NO_DEPENDENCY = "__no_dependency__";
+
 const QuestionBody = ({ id, question }: Props) => {
-    const { control, watch } = useFormContext();
+    const { control, setValue } = useFormContext();
+    const dependsOn = question.dependsOn;
 
     const questionAnswer = useWatch({
         control,
-        name: question.dependsOn!,
+        name: dependsOn || NO_DEPENDENCY,
     });
 
-    const questionAnswerWatch = watch(question.dependsOn!);
+    // Guarda o último valor visto de forma síncrona (não via efeito), para
+    // não confundir a dupla invocação de efeitos do React Strict Mode (dev)
+    // com uma mudança real — um ref "já rodei uma vez" sozinho não resiste
+    // a isso, pois a segunda invocação simulada acontece antes de qualquer
+    // mudança real de dado.
+    const prevAnswerRef = useRef(questionAnswer);
 
-
-
+    // Quando a resposta da pergunta "pai" (ex.: Sim/Não) muda, a resposta
+    // desta pergunta dependente perde o contexto e precisa ser limpa,
+    // senão fica uma resposta "presa" de um caminho que não existe mais.
     useEffect(() => {
-    }, [questionAnswer]);
+        const prevAnswer = prevAnswerRef.current;
+        prevAnswerRef.current = questionAnswer;
+
+        if (!dependsOn) return;
+        if (prevAnswer === questionAnswer) return;
+
+        setValue(question.name, undefined, { shouldValidate: true, shouldDirty: true });
+    }, [questionAnswer, dependsOn]);
 
 
     function handleType(type: IQuestion["type"]) {
@@ -55,15 +76,15 @@ const QuestionBody = ({ id, question }: Props) => {
     if (question.dependsOn) {
         const shouldShowQuestion = question.dependsOn
             ? question.dependsOnValue !== undefined
-                ? questionAnswerWatch && questionAnswerWatch[question.dependsOn] === question.dependsOnValue
+                ? questionAnswer && questionAnswer[question.dependsOn] === question.dependsOnValue
                     ? true
-                    : typeof questionAnswerWatch === "string"
-                        ? (question.dependsOnValue.includes("Outro") && questionAnswerWatch.includes("Outro"))
+                    : typeof questionAnswer === "string"
+                        ? (question.dependsOnValue.includes("Outro") && questionAnswer.includes("Outro"))
                             ? true
-                            : questionAnswerWatch === question.dependsOnValue
+                            : questionAnswer === question.dependsOnValue
                         : false
-                : Boolean(questionAnswerWatch) &&
-                (Array.isArray(questionAnswerWatch) ? questionAnswerWatch.length > 0 : true)
+                : Boolean(questionAnswer) &&
+                (Array.isArray(questionAnswer) ? questionAnswer.length > 0 : true)
             : true;
 
         if (!shouldShowQuestion) return null;

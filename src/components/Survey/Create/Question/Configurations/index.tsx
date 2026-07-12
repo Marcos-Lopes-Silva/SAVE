@@ -64,7 +64,6 @@ const Configurations = ({ isOpen, onOpenChange, question, updateProp, questions,
 
     useEffect(() => {
         setIsDependent(!!question.dependsOn);
-        console.log(question.required);
         setExpectedResponses(question.dependsOnOptions || []);
     }, [isOpen, question]);
 

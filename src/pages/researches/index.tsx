@@ -375,7 +375,13 @@ export const getServerSideProps: GetServerSideProps = async () => {
   try {
     await connectToMongoDB();
 
-    const publicAnalytics = await SurveyAnalytics.find({ hasPublic: true }).lean();
+    // Only the unfiltered ("master") analytics doc determines whether a
+    // survey's default view is public — a filtered variant being public
+    // doesn't mean the survey's default (no-filter) results are.
+    const publicAnalytics = await SurveyAnalytics.find({
+      hasPublic: true,
+      $or: [{ filters: { $exists: false } }, { filters: null }, { filters: [] }],
+    }).lean();
 
     const validSurveyIds = publicAnalytics
       .map(a => {

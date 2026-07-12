@@ -1,12 +1,15 @@
 import { connectToMongoDB } from "@/lib/db";
 import { NextApiRequest, NextApiResponse } from "next";
 import User from "../../../../models/userModel";
+import { requireAdmin } from "@/lib/apiAuth";
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
 
     if (req.method !== 'GET') return res.status(405).json({ message: 'Method not allowed' });
+
+    if (!(await requireAdmin(req, res))) return;
 
     try {
         const users = await User.find({});

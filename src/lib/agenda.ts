@@ -20,10 +20,7 @@ agenda.define('send email', async (job: Job) => {
 
     const { to, subject, text } = job.attrs.data as { to: string, subject: string, text: string };
 
-    console.log(`Enviando email para ${to}`);
-
     await transporter.sendMail({ to, subject, html: text });
-    console.log('Email enviado com sucesso');
 });
 
 agenda.define('update database field', async (job: Job) => {
@@ -36,8 +33,6 @@ agenda.define('update database field', async (job: Job) => {
         value: any;
     };
 
-    console.log(collection, id, field, value);
-
     try {
         // Verifica se o modelo já foi registrado, para evitar recriá-lo
         const Model = mongoose.models[collection] || mongoose.model(collection, new mongoose.Schema({}, { strict: false }));
@@ -46,18 +41,14 @@ agenda.define('update database field', async (job: Job) => {
         const result = await Model.findById(id);
 
         if (!result) {
-            console.log(`Documento com ID ${id} não encontrado na coleção ${collection}`);
             return;
         }
 
         // Atualiza o campo específico com o valor passado
         result.set(field, value);
 
-        console.log(result);
         // Salva o documento atualizado
         await result.save();
-
-        console.log('Documento atualizado:', result);
 
         return result;
     } catch (error) {

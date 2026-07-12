@@ -3,6 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import Survey from "../../../../../models/surveyModel";
 import SurveyUsers from "../../../../../models/surveyUsersModel";
 import Group from "../../../../../models/groupModel";
+import { requireSession } from "@/lib/apiAuth";
 
 
 
@@ -10,12 +11,13 @@ import Group from "../../../../../models/groupModel";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
 
+    if (!(await requireSession(req, res))) return;
+
     const { cpf } = req.query;
 
     try {
         const groups = await Group.find({ members: { $elemMatch: { cpf } } });
         let surveyIds: string[] = [];
-        console.log(groups);
         for (const group of groups) {
             const surveyUser = await SurveyUsers.findOne({ groupId: group._id });
             if (surveyUser) {

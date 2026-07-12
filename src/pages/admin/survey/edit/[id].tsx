@@ -33,7 +33,6 @@ export default function Edit({ id }: Props) {
             const timeout = setTimeout(() => {
                 setLoading(false)
             }, 3000);
-            console.log(data);
             return () => clearTimeout(timeout);
         });
     }, []);

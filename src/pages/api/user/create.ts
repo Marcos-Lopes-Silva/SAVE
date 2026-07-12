@@ -1,6 +1,7 @@
 import { connectToMongoDB } from "@/lib/db";
 import { NextApiRequest, NextApiResponse } from "next";
 import User from "../../../../models/userModel";
+import { requireAdmin } from "@/lib/apiAuth";
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,6 +11,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!(req.method === 'POST')) {
         return res.status(405).json({ message: 'Method not allowed' });
     }
+
+    if (!(await requireAdmin(req, res))) return;
 
     if (!body) {
         return res.status(400).json({ message: 'No body provided' });

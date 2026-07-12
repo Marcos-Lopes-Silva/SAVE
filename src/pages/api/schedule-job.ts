@@ -7,6 +7,7 @@ import SurveyResult from "../../../models/surveyResultModel";
 import { processResults } from "../../lib/processresults"; // Movemos a função para um arquivo separado
 import { SurveyResultDocument } from "../../../types/survey";
 import mongoose from "mongoose";
+import { requireAdmin } from "@/lib/apiAuth";
 
 interface ScheduleJob {
     job: 'send emails survey' | 'send emails results' | 'update database field',
@@ -22,6 +23,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     await connectToMongoDB();
 
     if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
+
+    if (!(await requireAdmin(req, res))) return;
 
     const { scheduleDate, job, emails, collection, field, value, id } = req.body as ScheduleJob;
 

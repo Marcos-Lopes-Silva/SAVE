@@ -2,10 +2,23 @@ import { NextApiRequest, NextApiResponse } from "next";
 import mongoose from "mongoose";
 import { connectToMongoDB } from "@/lib/db";
 import User from "../../../../../models/userModel";
+import { requireSession } from "@/lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToMongoDB();
   const { id } = req.query;
+
+  const session = await requireSession(req, res);
+  if (!session) return;
+
+  const isSelf = mongoose.isValidObjectId(id as string)
+    ? session.user._id?.toString() === (id as string)
+    : session.user.email === id;
+  const isAdmin = session.user.role === "admin" && session.user.verified;
+
+  if (!isSelf && !isAdmin) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
 
   switch (req.method) {
     case "GET":
@@ -14,11 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           ? { _id: new mongoose.Types.ObjectId(id as string) }
           : { email: id };
 
-        console.log("Filtro usado no GET:", filter); // Log para depuração
-
         const user = await User.findOne(filter).lean();
-
-        console.log("Usuário encontrado:", user); // Log para depuração
 
         return res.status(200).json(user);
       } catch (error) {
@@ -39,8 +48,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           course: course?.trim() || "",
           graduationYear: graduationYear ? parseInt(graduationYear, 10) : null,
         };
-
-        console.log("Dados recebidos para atualização:", updateData); // Log para depuração
 
         const user = await User.findOneAndUpdate(
           { _id: new mongoose.Types.ObjectId(id as string) },

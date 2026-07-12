@@ -1,9 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { connectToMongoDB } from '@/lib/db';
 import Group from '../../../../models/groupModel';
+import { hashNewMembersCpf } from '@/lib/groupMembers';
+import { requireAdmin } from '@/lib/apiAuth';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
+
+    if (!(await requireAdmin(req, res))) return;
 
     const { id } = req.query;
 
@@ -18,9 +22,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(200).json(group);
 
             case "PATCH":
+                const patchBody = { ...req.body };
+
+                if (Array.isArray(patchBody.members)) {
+                    patchBody.members = await hashNewMembersCpf(patchBody.members);
+                }
+
                 const updatedGroup = await Group.findByIdAndUpdate(
                     id,
-                    { $set: req.body },
+                    { $set: patchBody },
                     { new: true }
                 );
 

@@ -1,8 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import Group from "../../../../../models/groupModel";
 import { createSearchHash } from "@/lib/crypto";
+import { requireSession } from "@/lib/apiAuth";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    if (!(await requireSession(req, res))) return;
+
     const { cpf } = req.query;
 
     if (!cpf || typeof cpf !== "string") {

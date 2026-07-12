@@ -1,33 +1,19 @@
 import { connectToMongoDB } from '@/lib/db';
 import { NextApiRequest, NextApiResponse } from 'next';
-import Group, { IUsers } from '../../../../models/groupModel';
-import { compareToken, createSearchHash, hashToken } from '@/lib/crypto';
+import Group from '../../../../models/groupModel';
+import { hashNewMembersCpf } from '@/lib/groupMembers';
+import { requireAdmin } from '@/lib/apiAuth';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToMongoDB();
 
+    if (!(await requireAdmin(req, res))) return;
+
     switch (req.method) {
         case "POST":
             try {
-                const newUsers = await Promise.all(
-                    req.body.members.map(async (user: IUsers) => {
-                        const cpf = user.cpf?.replace(/\D/g, '') ?? '';
-
-                        const newUser = {
-                            ...user,
-                            cpf: await hashToken(cpf),
-                            cpf_search: createSearchHash(cpf)
-                        };
-
-                        const memberHashed = await verifyUsersFromOthersGroups(newUser.cpf_search);
-
-                        if (memberHashed) newUser.cpf = memberHashed;
-                        else if (newUser.cpf) newUser.cpf = await hashToken(newUser.cpf) ?? '';
-                        return newUser;
-                    })
-                );
-
+                const newUsers = await hashNewMembersCpf(req.body.members);
 
                 const group = await Group.create({ ...req.body, members: newUsers });
 
@@ -48,19 +34,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(405).json({ message: 'Method not allowed' });
     }
 }
-
-const verifyUsersFromOthersGroups = async (cpf_search: string) => {
-    try {
-        const group = await Group.findOne(
-            { "members.cpf_search": cpf_search },
-            { "members.$": 1 }
-        );
-
-        if (!group || !group.members.length) return null;
-
-        return group.members[0].cpf;
-    } catch (error) {
-        console.error(error);
-        return null;
-    }
-};

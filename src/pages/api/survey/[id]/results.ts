@@ -164,6 +164,19 @@ export default async function handler(
         }
         const objectId = new mongoose.Types.ObjectId(id as string);
 
+        const surveyForPatch = await Survey.findById(objectId);
+        if (!surveyForPatch) {
+          return res.status(404).json({ message: "Pesquisa não encontrada" });
+        }
+
+        const patchUserId = session?.user?._id;
+        const isPatchAuthor = patchUserId && surveyForPatch.author.toString() === patchUserId.toString();
+        const isPatchShared = patchUserId && surveyForPatch.sharedWith?.some((uid: any) => uid.toString() === patchUserId.toString());
+
+        if (!isPatchAuthor && !isPatchShared && session?.user?.role !== "admin") {
+          return res.status(403).json({ message: "Acesso negado" });
+        }
+
         // Atualiza apenas o documento master (sem filtros)
         const updatedAnalytics = await SurveyAnalytics.findOneAndUpdate(
           { surveyId: objectId, $or: [{ filters: { $exists: false } }, { filters: null }, { filters: [] }] },

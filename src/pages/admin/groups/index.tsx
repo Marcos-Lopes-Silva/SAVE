@@ -20,7 +20,6 @@ export default function Groups(survey: ISurveyDocument[]) {
     const [groups, setGroups] = useState<IGroupDocument[]>([]);
     async function handleGroupsData() {
         const response = await api.get<IGroupDocument[]>('group');
-        console.log(response);
         setGroups(response);
     }
 
@@ -80,7 +79,6 @@ export default function Groups(survey: ISurveyDocument[]) {
 
     useEffect(() => {
         handleGroupsData();
-        console.log(groups);
     }, []);
 
     const filteredList = useMemo(() => {

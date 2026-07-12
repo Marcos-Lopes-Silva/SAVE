@@ -2,7 +2,9 @@ import { api } from "@/lib/api";
 import { t } from "i18next";
 import { useEffect, useMemo, useState } from 'react';
 import { useSession, getSession } from "next-auth/react";
-import { ISurveyDocument } from "../../../../models/surveyModel";
+import Survey, { ISurveyDocument } from "../../../../models/surveyModel";
+import Group from "../../../../models/groupModel";
+import SurveyUsers from "../../../../models/surveyUsersModel";
 import { useRouter } from "next/router";
 import { HiOutlineUserGroup } from "react-icons/hi";
 import InputMask from 'react-input-mask';
@@ -162,7 +164,18 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
     await connectToMongoDB();
 
     const session = await getSession(context);
-    const surveys = await api.get<ISurveyDocument[]>(`user/survey?cpf=${session?.user?.cpf}`);
+    const cpf = session?.user?.cpf;
+
+    let surveys: ISurveyDocument[] = [];
+    if (cpf) {
+        const groups = await Group.find({ members: { $elemMatch: { cpf } } });
+        const surveyIds: string[] = [];
+        for (const group of groups) {
+            const surveyUser = await SurveyUsers.findOne({ groupId: group._id });
+            if (surveyUser) surveyIds.push(surveyUser.surveyId.toString());
+        }
+        surveys = await Survey.find({ _id: { $in: surveyIds } });
+    }
 
     return {
         props: {
@@ -198,8 +211,6 @@ type CPF = z.infer<typeof cpfSchema>;
 const ValidateModel = ({ isOpen, onOpenChange, session }: ValidateModelProps) => {
 
     const updateCPF = async (data: CPF) => {
-        console.log(data);
-
         if ((data.cpf && data.cpf.length < 9) || !data.cpf) {
             toast.error("CPF inválido");
             return;

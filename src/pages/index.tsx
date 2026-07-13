@@ -14,11 +14,27 @@ export default function Login() {
     const [role, setRole] = useState<string>('user');
     const { push } = useRouter();
     const { data: session, status } = useSession();
+    const [embeddedBrowser, setEmbeddedBrowser] = useState(false);
 
     const login = (provider: string) => {
         localStorage.setItem('role', role);
         signIn(provider, { callbackUrl: `/authenticate` });
     }
+
+    useEffect(() => {
+        const ua = navigator.userAgent.toLowerCase();
+
+        setEmbeddedBrowser(
+            [
+                "instagram",
+                "fban",
+                "fbav",
+                "fb_iab",
+                "wv",
+                "webview"
+            ].some(browser => ua.includes(browser))
+        );
+    }, []);
 
     useEffect(() => {
         if (status === 'authenticated') push('/authenticate');
@@ -74,6 +90,12 @@ export default function Login() {
                     />
                 </div>
                 <div className="flex flex-col gap-4">
+                    {embeddedBrowser && (
+                        <div className="rounded-lg bg-yellow-100 p-4 text-yellow-800">
+                            O login com Google não está disponível no navegador interno deste aplicativo.
+                            Abra o SAVE no Chrome, Safari ou outro navegador.
+                        </div>
+                    )}
                     <Button onClick={() => login('google')}><FcGoogle size={20} />{t('login.google')}</Button>
                     {/* <Button onClick={() => login('github')}><FaGithub size={20} />{t('login.github')}</Button>
                     <Button onClick={() => login('facebook')}><FaFacebook size={20} />{t('login.facebook')}</Button> */}

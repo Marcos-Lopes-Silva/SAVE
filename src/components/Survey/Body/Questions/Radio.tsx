@@ -9,9 +9,9 @@ export function Radio({ question }: IQuestionProp) {
     const { setValue, watch } = useFormContext();
     const watchedValue = String(watch(question.name) ?? "");
 
-    const isOtherOptionValue = (val: string) => 
-        ["outro", "outra", "outro:", "outros", "other"].includes(val.toLowerCase()) || 
-        val.toLowerCase().startsWith("outro:");
+    const isOtherOptionValue = (val: unknown) =>
+        ["outro", "outra", "outro:", "outros", "other"].includes(String(val ?? "").toLowerCase()) ||
+        String(val ?? "").toLowerCase().startsWith("outro:");
 
     return (
         <Form.Field>

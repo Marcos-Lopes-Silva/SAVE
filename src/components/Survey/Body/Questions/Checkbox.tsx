@@ -9,9 +9,9 @@ export function Checkbox({ question }: IQuestionProp) {
     const { setValue, watch } = useFormContext();
     const watchedValue = watch(question.name);
 
-    const isOtherOptionValue = (val: string) => 
-        ["outro", "outra", "outro:", "outros", "other"].includes(val.toLowerCase()) || 
-        val.toLowerCase().startsWith("outro:");
+    const isOtherOptionValue = (val: unknown) =>
+        ["outro", "outra", "outro:", "outros", "other"].includes(String(val ?? "").toLowerCase()) ||
+        String(val ?? "").toLowerCase().startsWith("outro:");
 
     const handleCheckboxChange = (name: string, value: string, checked: boolean, isOtherOption: boolean) => {
         const currentValues = Array.isArray(watchedValue) ? watchedValue : [];
@@ -96,7 +96,7 @@ export function Checkbox({ question }: IQuestionProp) {
                                             variant="underlined"
                                             className="dark:text-white"
                                             placeholder="Digite aqui..."
-                                            value={otherEntry?.toLowerCase().startsWith("outro:") ? otherEntry.slice(otherEntry.indexOf(":") + 1).replace(/^ /, "") : ""}
+                                            value={String(otherEntry ?? "").toLowerCase().startsWith("outro:") ? String(otherEntry).slice(String(otherEntry).indexOf(":") + 1).replace(/^ /, "") : ""}
                                             onChange={(e) => handleCheckboxOtherChange(question.name, e.target.value)}
                                         />
                                     </Form.Field>

@@ -92,20 +92,20 @@ const createSurveySchema = (survey: ISurvey) => {
 
                 if (question.type === "checkbox" || question.type === "radio") {
                     fieldSchema = fieldSchema.refine((val) => {
-                        const isOther = (v: string) => 
-                            ["outro", "outra", "outro:", "outros", "other"].includes(v.toLowerCase());
+                        const isOther = (v: unknown) =>
+                            ["outro", "outra", "outro:", "outros", "other"].includes(String(v ?? "").toLowerCase());
 
                         if (Array.isArray(val)) {
-                            const hasOther = val.some(v => isOther(v) || v.toLowerCase().startsWith("outro:"));
+                            const hasOther = val.some(v => isOther(v) || String(v ?? "").toLowerCase().startsWith("outro:"));
                             if (!hasOther) return true;
-                            return val.some(v => v.toLowerCase().startsWith('outro:') && v.split(':')[1]?.trim().length > 0);
+                            return val.some(v => String(v ?? "").toLowerCase().startsWith('outro:') && String(v).split(':')[1]?.trim().length > 0);
                         }
-                        
+
                         if (typeof val === 'string') {
                             if (!isOther(val) && !val.toLowerCase().startsWith("outro:")) return true;
                             return val.toLowerCase().startsWith('outro:') && val.split(':')[1]?.trim().length > 0;
                         }
-                        
+
                         return true;
                     }, "Preencha o campo 'Outro'");
                 }
@@ -620,22 +620,22 @@ const QuestionsProgress = ({ questions, scroll, show, watch }: IQuestionsProgres
             return question.rows.every(row => currentValue[row.text] && currentValue[row.text].length > 0);
         }
 
-        const isOther = (v: string) => 
-            ["outro", "outra", "outro:", "outros", "other"].includes(v.toLowerCase());
+        const isOther = (v: unknown) =>
+            ["outro", "outra", "outro:", "outros", "other"].includes(String(v ?? "").toLowerCase());
 
         if (question.type === 'checkbox') {
             if (!Array.isArray(currentValue) || currentValue.length === 0) return false;
-            const hasOther = currentValue.some(v => isOther(v) || v.toLowerCase().startsWith("outro:"));
+            const hasOther = currentValue.some(v => isOther(v) || String(v ?? "").toLowerCase().startsWith("outro:"));
             if (hasOther) {
-                return currentValue.some(v => v.toLowerCase().startsWith('outro:') && v.split(':')[1]?.trim().length > 0);
+                return currentValue.some(v => String(v ?? "").toLowerCase().startsWith('outro:') && String(v).split(':')[1]?.trim().length > 0);
             }
             return true;
         }
 
         if (question.type === 'radio') {
             if (isOther(currentValue)) return false;
-            if (currentValue.toLowerCase().startsWith("outro:")) {
-                return currentValue.split(':')[1]?.trim().length > 0;
+            if (String(currentValue ?? "").toLowerCase().startsWith("outro:")) {
+                return String(currentValue).split(':')[1]?.trim().length > 0;
             }
             return true;
         }
@@ -767,22 +767,22 @@ const ProgressBar = ({ watch, questions }: any) => {
             return question.rows.every(row => currentValue[row.text] && currentValue[row.text].length > 0);
         }
 
-        const isOther = (v: string) => 
-            ["outro", "outra", "outro:", "outros", "other"].includes(v.toLowerCase());
+        const isOther = (v: unknown) =>
+            ["outro", "outra", "outro:", "outros", "other"].includes(String(v ?? "").toLowerCase());
 
         if (question.type === 'checkbox') {
             if (!Array.isArray(currentValue) || currentValue.length === 0) return false;
-            const hasOther = currentValue.some(v => isOther(v) || v.toLowerCase().startsWith("outro:"));
+            const hasOther = currentValue.some(v => isOther(v) || String(v ?? "").toLowerCase().startsWith("outro:"));
             if (hasOther) {
-                return currentValue.some(v => v.toLowerCase().startsWith('outro:') && v.split(':')[1]?.trim().length > 0);
+                return currentValue.some(v => String(v ?? "").toLowerCase().startsWith('outro:') && String(v).split(':')[1]?.trim().length > 0);
             }
             return true;
         }
 
         if (question.type === 'radio') {
             if (isOther(currentValue)) return false;
-            if (currentValue.toLowerCase().startsWith("outro:")) {
-                return currentValue.split(':')[1]?.trim().length > 0;
+            if (String(currentValue ?? "").toLowerCase().startsWith("outro:")) {
+                return String(currentValue).split(':')[1]?.trim().length > 0;
             }
             return true;
         }

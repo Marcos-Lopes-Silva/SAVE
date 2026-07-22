@@ -36,7 +36,10 @@ const createSurveySchema = (survey: ISurvey) => {
                     case 'number':
                     case 'text':
                     case 'textarea':
-                        fieldSchema = z.string({ invalid_type_error: "Digite aqui" }).optional();
+                        fieldSchema = z.preprocess(
+                            (val) => (val === undefined || val === null || typeof val === 'string') ? val : String(val),
+                            z.string({ invalid_type_error: "Digite aqui" }).optional()
+                        );
                         break;
                     case 'radio':
                         fieldSchema = z.string().optional().nullable();
@@ -201,10 +204,7 @@ export default function SurveyBody({ survey, responses, term }: Props) {
         getValues
     } = createSurveyForm;
 
-    // Perguntas de texto contínuo (o usuário digita aos poucos) não devem
-    // disparar um save a cada tecla — só ao perder o foco. Perguntas de
-    // resposta discreta (radio/checkbox/select/etc) continuam salvando pelo
-    // watcher de formulário abaixo.
+
     const continuousTypingFields = useMemo(() => {
         const names = new Set<string>();
         survey.pages.forEach((page) => {

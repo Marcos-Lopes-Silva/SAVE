@@ -166,7 +166,7 @@ const Graphics = ({
 
               <div className="p-4 w-full overflow-x-visible">
                 {filteredData.length > 0 ? (
-                  <div className="w-full h-[200px] flex items-center justify-center lg:h-[450px]">
+                  <div className="w-full min-h-[200px] h-auto flex items-center justify-center lg:min-h-[450px]">
                     <Charts
                       data={filteredData}
                       typeChart={chartType}

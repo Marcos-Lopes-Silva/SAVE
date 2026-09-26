@@ -2,8 +2,8 @@
 
 export default {
   i18n: {
-    locales: ['en', 'pt-BR'],
-    defaultLocale: 'en',
+    locales: ['pt-BR', 'en'],
+    defaultLocale: 'pt-BR',
     localeDetection: false,
   },
   images: {

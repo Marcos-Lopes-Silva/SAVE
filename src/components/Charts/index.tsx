@@ -112,20 +112,20 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
+                                <Tooltip formatter={(value: any, name: any) => [value, removeEmojis(String(name))]} />
                             </PieChart>
                         </ResponsiveContainer>
                         <div className="w-[450px] px-4 py-2">
                             {data.map((entry: { name: string; value: number }, index: number) => (
-                                <div key={index} className="flex items-center mb-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                <div key={index} className="flex items-start mb-2.5">
                                     <div
-                                        className="w-4 h-4 rounded-full mr-2"
+                                        className="w-4 h-4 rounded-full mr-2 mt-0.5 shrink-0"
                                         style={{ backgroundColor: colors[index % colors.length] }}
                                     />
-                                    <span className="text-sm font-medium" title={entry.name}>
-                                        {truncateText(removeEmojis(entry.name), 20)}
+                                    <span className="text-sm font-medium break-words pr-2 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                        {removeEmojis(entry.name)}
                                     </span>
-                                    <span className="text-sm font-semibold ml-auto">
+                                    <span className="text-sm font-semibold ml-auto shrink-0">
                                         {entry.value}
                                     </span>
                                 </div>
@@ -150,19 +150,20 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                                     ))}
                                 </Pie>
+                                <Tooltip formatter={(value: any, name: any) => [value, removeEmojis(String(name))]} />
                             </PieChart>
                         </ResponsiveContainer>
-                        <div className="w-[200px] px-2 -ml-5 max-h-[200px]">
+                        <div className="w-[200px] px-2 -ml-5">
                             {data.map((entry: { name: string; value: number }, index: number) => (
-                                <div key={index} className="flex items-center mb-2 gap-1 overflow-y-scroll scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                <div key={index} className="flex items-start mb-2 gap-1">
                                     <div
-                                        className="w-3 h-3 rounded-full mr-2"
+                                        className="w-3 h-3 rounded-full mr-1 mt-0.5 shrink-0"
                                         style={{ backgroundColor: colors[index % colors.length] }}
                                     />
-                                    <span className="text-xs font-medium" title={entry.name} onClick={() => alert(entry.name)}>
-                                        {truncateText(removeEmojis(entry.name), 10)}
+                                    <span className="text-xs font-medium break-words pr-1 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                        {removeEmojis(entry.name)}
                                     </span>
-                                    <span className="text-xs font-semibold ml-auto">
+                                    <span className="text-xs font-semibold ml-auto shrink-0">
                                         {entry.value}
                                     </span>
                                 </div>
@@ -180,8 +181,12 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                             <BarChart data={data} {...commonProps}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="value" barSize={200} activeBar={<Rectangle strokeWidth={2} />}>
+                                <XAxis dataKey="name" hide />
+                                <Tooltip
+                                    labelFormatter={(label) => removeEmojis(String(label))}
+                                    formatter={(value: any) => [value, 'Respostas']}
+                                />
+                                <Bar dataKey="value" name="Respostas" barSize={200} activeBar={<Rectangle strokeWidth={2} />}>
                                     {data.map((_, index) => (
                                         <Cell
                                             key={`cell-${index}`}
@@ -194,15 +199,15 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                         </ResponsiveContainer>
                         <div className="w-[350px] px-4 py-2">
                             {data.map((entry: { name: string; value: number }, index: number) => (
-                                <div key={index} className="flex items-center mb-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                <div key={index} className="flex items-start mb-2.5">
                                     <div
-                                        className="w-4 h-4 rounded-full mr-2"
+                                        className="w-4 h-4 rounded-full mr-2 mt-0.5 shrink-0"
                                         style={{ backgroundColor: colors[index % colors.length] }}
                                     />
-                                    <span className="text-sm font-medium" title={entry.name}>
-                                        {truncateText(removeEmojis(entry.name), 20)}
+                                    <span className="text-sm font-medium break-words pr-2 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                        {removeEmojis(entry.name)}
                                     </span>
-                                    <span className="text-sm font-semibold ml-auto">
+                                    <span className="text-sm font-semibold ml-auto shrink-0">
                                         {entry.value}
                                     </span>
                                 </div>
@@ -225,8 +230,12 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <YAxis />
                                             <XAxis dataKey="name" className="hidden" />
-                                            <Tooltip labelClassName="text-balance" />
-                                            <Bar dataKey="value" barSize={barSize} activeBar={<Rectangle strokeWidth={10} />}>
+                                            <Tooltip
+                                                labelClassName="text-balance"
+                                                labelFormatter={(label) => removeEmojis(String(label))}
+                                                formatter={(value: any) => [value, 'Respostas']}
+                                            />
+                                            <Bar dataKey="value" name="Respostas" barSize={barSize} activeBar={<Rectangle strokeWidth={10} />}>
                                                 {data.map((_, index) => (
                                                     <Cell
                                                         key={`cell-${index}`}
@@ -239,17 +248,17 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                     );
                                 })()}
                             </ResponsiveContainer>
-                            <div className="w-[210px] px-6 py-2 overflow-y-scroll -ml-10 max-h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                            <div className="w-[210px] px-4 py-2 -ml-8">
                                 {data.map((entry: { name: string; value: number }, index: number) => (
-                                    <div key={index} className="flex items-center mb-2 gap-2">
+                                    <div key={index} className="flex items-start mb-2 gap-2">
                                         <div
-                                            className="w-3 h-3 rounded-full mr-1"
+                                            className="w-3 h-3 rounded-full mr-1 mt-0.5 shrink-0"
                                             style={{ backgroundColor: colors[index % colors.length] }}
                                         />
-                                        <span className="text-xs font-medium" title={entry.name}>
-                                            {truncateText(removeEmojis(entry.name), calculateTruncateLength(data, window.innerWidth * 0.85, false))}
+                                        <span className="text-xs font-medium break-words pr-1 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                            {removeEmojis(entry.name)}
                                         </span>
-                                        <span className="text-xs font-semibold ml-auto">
+                                        <span className="text-xs font-semibold ml-auto shrink-0">
                                             {entry.value}
                                         </span>
                                     </div>
@@ -277,10 +286,14 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                     dy={10}
                                 />
                                 <YAxis />
-                                <Tooltip />
+                                <Tooltip
+                                    labelFormatter={(label) => removeEmojis(String(label))}
+                                    formatter={(value: any) => [value, 'Respostas']}
+                                />
                                 <Line
                                     type="monotone"
                                     dataKey="value"
+                                    name="Respostas"
                                     stroke={colors[0]}
                                     activeDot={{ r: 6 }}
                                     dot={{ r: 3 }}
@@ -302,10 +315,14 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 dy={10}
                             />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip
+                                labelFormatter={(label) => removeEmojis(String(label))}
+                                formatter={(value: any) => [value, 'Respostas']}
+                            />
                             <Line
                                 type="monotone"
                                 dataKey="value"
+                                name="Respostas"
                                 stroke={colors[0]}
                                 activeDot={{ r: 6 }}
                                 dot={{ r: 3 }}
@@ -329,10 +346,14 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 dy={10}
                             />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip
+                                labelFormatter={(label) => removeEmojis(String(label))}
+                                formatter={(value: any) => [value, 'Respostas']}
+                            />
                             <Area
                                 type="monotone"
                                 dataKey="value"
+                                name="Respostas"
                                 stroke={colors[0]}
                                 fill={colors[0]}
                                 fillOpacity={0.4}
@@ -351,10 +372,14 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 dy={10}
                             />
                             <YAxis />
-                            <Tooltip />
+                            <Tooltip
+                                labelFormatter={(label) => removeEmojis(String(label))}
+                                formatter={(value: any) => [value, 'Respostas']}
+                            />
                             <Area
                                 type="monotone"
                                 dataKey="value"
+                                name="Respostas"
                                 stroke={colors[0]}
                                 fill={colors[0]}
                                 fillOpacity={0.4}
@@ -378,9 +403,12 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 dy={10}
                             />
                             <YAxis />
-                            <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                            <Tooltip
+                                cursor={{ strokeDasharray: '3 3' }}
+                                labelFormatter={(label) => removeEmojis(String(label))}
+                            />
                             <Scatter
-                                name="A school"
+                                name="Respostas"
                                 data={data}
                                 dataKey="value"
                                 fill={colors[0]}
@@ -399,9 +427,12 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 dy={10}
                             />
                             <YAxis />
-                            <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                            <Tooltip
+                                cursor={{ strokeDasharray: '3 3' }}
+                                labelFormatter={(label) => removeEmojis(String(label))}
+                            />
                             <Scatter
-                                name="A school"
+                                name="Respostas"
                                 data={data}
                                 dataKey="value"
                                 fill={colors[0]}
@@ -423,13 +454,13 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                             />
                             <PolarRadiusAxis />
                             <Radar
-                                name="Radar"
+                                name="Respostas"
                                 dataKey="value"
                                 stroke={colors[0]}
                                 fill={colors[0]}
                                 fillOpacity={0.6}
                             />
-                            <Tooltip />
+                            <Tooltip labelFormatter={(label) => removeEmojis(String(label))} />
                         </RadarChart>
                     </ResponsiveContainer>
                 ) : (
@@ -442,13 +473,13 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                             />
                             <PolarRadiusAxis />
                             <Radar
-                                name="Radar"
+                                name="Respostas"
                                 dataKey="value"
                                 stroke={colors[0]}
                                 fill={colors[0]}
                                 fillOpacity={0.6}
                             />
-                            <Tooltip />
+                            <Tooltip labelFormatter={(label) => removeEmojis(String(label))} />
                         </RadarChart>
                     </ResponsiveContainer>
                 )}
@@ -479,15 +510,15 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                         </ResponsiveContainer>
                         <div className="w-[350px] px-4 py-2">
                             {data.map((entry: { name: string; value: number }, index: number) => (
-                                <div key={index} className="flex items-center mb-2 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                                <div key={index} className="flex items-start mb-2.5">
                                     <div
-                                        className="w-4 h-4 rounded-full mr-2"
+                                        className="w-4 h-4 rounded-full mr-2 mt-0.5 shrink-0"
                                         style={{ backgroundColor: colors[index % colors.length] }}
                                     />
-                                    <span className="text-sm font-medium" title={entry.name}>
-                                        {truncateText(removeEmojis(entry.name), 30)}
+                                    <span className="text-sm font-medium break-words pr-2 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                        {removeEmojis(entry.name)}
                                     </span>
-                                    <span className="text-sm font-semibold ml-auto">
+                                    <span className="text-sm font-semibold ml-auto shrink-0">
                                         {entry.value}
                                     </span>
                                 </div>
@@ -515,17 +546,17 @@ const Charts = ({ data, typeChart, colors }: ChartsProps) => {
                                 />
                             </RadialBarChart>
                         </ResponsiveContainer>
-                        <div className="w-[350px] px-4 py-2 overflow-y-scroll max-h-[200px] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                        <div className="w-[350px] px-4 py-2">
                             {data.map((entry: { name: string; value: number }, index: number) => (
-                                <div key={index} className="flex items-center mb-2 gap-2">
+                                <div key={index} className="flex items-start mb-2 gap-2">
                                     <div
-                                        className="w-3 h-3 rounded-full mr-1"
+                                        className="w-3 h-3 rounded-full mr-1 mt-0.5 shrink-0"
                                         style={{ backgroundColor: colors[index % colors.length] }}
                                     />
-                                    <span className="text-xs font-medium" title={entry.name}>
-                                        {truncateText(removeEmojis(entry.name), 15)}
+                                    <span className="text-xs font-medium break-words pr-1 flex-1 min-w-0" title={removeEmojis(entry.name)}>
+                                        {removeEmojis(entry.name)}
                                     </span>
-                                    <span className="text-xs font-semibold ml-auto">
+                                    <span className="text-xs font-semibold ml-auto shrink-0">
                                         {entry.value}
                                     </span>
                                 </div>

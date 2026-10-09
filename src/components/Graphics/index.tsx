@@ -124,11 +124,12 @@ const Graphics = ({
           const chartType = selectedChartTypes[id] || defaultChartType || 'pie';
 
           const chartContent = (
-            <div className="w-full h-[80vh] flex items-center justify-center">
+            <div className="w-full flex items-center justify-center p-2">
               <Charts
                 data={filteredData}
                 typeChart={chartType}
                 colors={getColors(filteredData.length)}
+                isModal={true}
               />
             </div>
           );
@@ -166,7 +167,7 @@ const Graphics = ({
 
               <div className="p-4 w-full overflow-x-visible">
                 {filteredData.length > 0 ? (
-                  <div className="w-full min-h-[200px] h-auto flex items-center justify-center lg:min-h-[450px]">
+                  <div className="w-full min-h-[200px] h-auto flex items-center justify-center lg:min-h-[460px]">
                     <Charts
                       data={filteredData}
                       typeChart={chartType}
@@ -218,12 +219,14 @@ const Graphics = ({
           );
         })}
       </div>
-      <Modal isOpen={isOpen} onOpenChange={onOpenChange}>
-        <ModalContent className="w-[95%] max-w-none lg:w-[85%]">
-          <ModalHeader className="px-6 py-3 text-lg bg-slate-950 text-white lg:px-12 lg:py-5 lg:text-xl ">
+      <Modal isOpen={isOpen} onOpenChange={onOpenChange} scrollBehavior="inside" placement="center">
+        <ModalContent className="w-[96vw] max-w-[96vw] h-auto max-h-[85vh] my-auto overflow-hidden">
+          <ModalHeader className="px-6 py-3 text-lg bg-slate-950 text-white lg:px-12 lg:text-xl shrink-0">
             {modalTitle}
           </ModalHeader>
-          <ModalBody>{modalContent}</ModalBody>
+          <ModalBody className="p-4 lg:p-6 flex items-center justify-center overflow-y-auto overflow-x-hidden">
+            {modalContent}
+          </ModalBody>
         </ModalContent>
       </Modal>
     </div>

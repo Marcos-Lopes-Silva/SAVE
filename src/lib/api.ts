@@ -56,8 +56,17 @@ export const api: IApi = {
     }
 };
 
+const getBaseUrl = (): string => {
+    if (typeof window !== "undefined") {
+        return "/api";
+    }
+    const host = process.env.NEXT_PUBLIC_NEXTAUTH_URL || "http://localhost:3000";
+    const cleanHost = host.replace(/\/+$/, "");
+    return `${cleanHost}/api`;
+};
+
 const axiosInstance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_NEXTAUTH_URL + 'api',
+    baseURL: getBaseUrl(),
     timeout: 50000,
     headers: {
         'Content-Type': 'application/json',
